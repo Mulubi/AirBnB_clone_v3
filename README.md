@@ -159,6 +159,7 @@ Jennifer Huang - [Github](https://github.com/jhuang10123) / [Twitter](https://tw
 
 ## Co-Authors
 Warren Mulubi - [Github](https://github.com/Mulubi)
+Joseph Mumo - [Github](https://github.com/JosephMumo)
 
 Second part of Airbnb: Joann Vuong
 ## License
