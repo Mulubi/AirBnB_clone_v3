@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 """
-This is the db_storage module.
-This module deals with storing and retrieving data from a mysql database.
-This module contains one class DBStorage.
+Contains the class DBStorage
 """
 
 import models
@@ -14,136 +12,73 @@ from models.review import Review
 from models.state import State
 from models.user import User
 from os import getenv
+import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 classes = {"Amenity": Amenity, "City": City,
-           "Place": Place, "Review": Review, "State": State,
-           "User": User}
+           "Place": Place, "Review": Review, "State": State, "User": User}
 
 
 class DBStorage:
-    """
-    class DBStorage
-    Save and retrieve data from a MySQL database using sqlAlchemy ORM
-
-    **class attributes**
-       __engine: private, sqlAlchemy engine
-       __session: private, MySQL session
-
-    instance attributes:
-       __models_available: private, dictionary of <string> <class>
-    """
+    """interaacts with the MySQL database"""
     __engine = None
     __session = None
 
     def __init__(self):
-        """
-        initializes engine
-        """
+        """Instantiate a DBStorage object"""
         HBNB_MYSQL_USER = getenv('HBNB_MYSQL_USER')
         HBNB_MYSQL_PWD = getenv('HBNB_MYSQL_PWD')
         HBNB_MYSQL_HOST = getenv('HBNB_MYSQL_HOST')
         HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
         HBNB_ENV = getenv('HBNB_ENV')
-        self.__engine = create_engine(
-                        'mysql+mysqldb://{}:{}@{}/{}'.
-                        format('HBNB_MYSQL_USER',
-                               'HBNB_MYSQL_PWD',
-                               'HBNB_MYSQL_HOST',
-                               'HBNB_MYSQL_DB'))
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.
+                                      format(HBNB_MYSQL_USER,
+                                             HBNB_MYSQL_PWD,
+                                             HBNB_MYSQL_HOST,
+                                             HBNB_MYSQL_DB))
         if HBNB_ENV == "test":
-            Base.netadata.drop_all(self.__engine)
+            Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """
-        returns a dictionary of all the class objects
-        """
-        orm_objects = {}
-        if cls:
-            if cls in self.__models_available:
-                for k in self.__session.query(
-                        self.__models_available.get(cls)):
-                    orm_objects[k.__dict__['id']] = k
-        else:
-            for i in self.__models_available.values():
-                j = self.__session.query(i).all()
-                if j:
-                    for k in j:
-                        orm_objects[k.__dict__['id']] = k
-        return orm_objects
+        """query on the current database session"""
+        new_dict = {}
+        for clss in classes:
+            if cls is None or cls is classes[clss] or cls is clss:
+                objs = self.__session.query(classes[clss]).all()
+                for obj in objs:
+                    key = obj.__class__.__name__ + '.' + obj.id
+                    new_dict[key] = obj
+        return (new_dict)
 
     def new(self, obj):
-        """
-        adds a new obj to the session
-        """
+        """add the object to the current database session"""
         self.__session.add(obj)
 
     def save(self):
-        """
-        saves the objects fom the current session
-        """
+        """commit all changes of the current database session"""
         self.__session.commit()
 
     def delete(self, obj=None):
-        """
-        deletes an object from the current session
-        """
+        """delete from the current database session obj if not None"""
         if obj is not None:
             self.__session.delete(obj)
-            self.__session.commit()
 
     def reload(self):
-        """
-        WARNING!!!! I'm not sure if Base.metadata.create_all needs to
-        be in the init method
-        """
+        """reloads data from the database"""
         Base.metadata.create_all(self.__engine)
-        self.__session = scoped_session(sessionmaker(bind=self.__engine,
-                                                     expire_on_commit=False))
+        sess_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(sess_factory)
+        self.__session = Session
 
     def close(self):
-        """
-        close a session
-        """
+        """call remove() method on the private session attribute"""
         self.__session.remove()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     def get(self, cls, id):
-        """Retrieve an object"""
-        if cls is not None and type(cls) is str and id is not None and\
-           type(id) is str and cls in name2class:
-            cls = name2class[cls]
-            result = self.__session.query(cls).filter(cls.id == id).first()
-            return result
-        else:
-            return None
-
-    def count(self, cls=None):
-        """Count number of objects in storage"""
-        total = 0
-        if type(cls) == str and cls in name2class:
-            cls = name2class[cls]
-            total = self.__session.query(cls).count()
-        elif cls is None:
-            for cls in name2class.values():
-                total += self.__session.query(cls).count()
-        return total
-=======
-    def get(self, cls, id_):
-=======
-    def get(self, cls, id):
->>>>>>> storage_get_count
         """
-        Retrieve one object
-
-        Arguments:
-            cls: string representing a class name
-            id: string representing the object id, primary key
-
-        Return:
-           object of cls and id passed in argument or None
+        Returns the object based on the class name and its ID, or
+        None if not found
         """
         if cls not in classes.values():
             return None
@@ -157,26 +92,8 @@ class DBStorage:
 
     def count(self, cls=None):
         """
-        Number of objects in a certain class
-
-        Arguments:
-            cls: optional, string representing a class name (default None)
-
-        Return:
-            number of objects in that class or in total
-            -1 if the argument is not valid
+        count the number of objects in storage
         """
-<<<<<<< HEAD
-        if cls is None:
-            total = 0
-            for v in self.__models_available.values():
-                total += self.__session.query(v).count()
-            return total
-        if cls in self.__models_available.keys():
-            return self.__session.query(self.__models_available[cls]).count()
-        return -1
->>>>>>> storage_get_count
-=======
         all_class = classes.values()
 
         if not cls:
@@ -187,4 +104,3 @@ class DBStorage:
             count = len(models.storage.all(cls).values())
 
         return count
->>>>>>> storage_get_count
