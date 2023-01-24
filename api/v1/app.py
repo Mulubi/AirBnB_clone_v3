@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This is the Flask Application"""
+"""This is the Flask Application for the HBNB"""
 from models import storage
 from api.v1.views import app_views
 from os import environ
