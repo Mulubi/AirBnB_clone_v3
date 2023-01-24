@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-'''
-File is used to determine the root path of the blueprint
-'''
+"""Blueprint for the API """
 from flask import Blueprint
 
 app_views = Blueprint("app_views", __name__, url_prefix="/api/v1")
