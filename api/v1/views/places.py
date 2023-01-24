@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" These objects handle all default RestFul API actions for Places """
+""" These objects handle the default RestFul API actions for Places """
 from models.state import State
 from models.city import City
 from models.place import Place
